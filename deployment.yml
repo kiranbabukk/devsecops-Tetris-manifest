@@ -1,35 +1,23 @@
----
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
 metadata:
-  name: tetris
+  name: tetris-multicluster
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: tetris
+  generators:
+  - clusters: {}
   template:
     metadata:
-      labels:
-        app: tetris
+      name: '{{name}}-tetris'
     spec:
-      containers:
-      - name: tetris
-        image: kirankalyandevops/tetrisv2:latest
-        ports:
-        - containerPort: 3000   # Use port 3000
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: tetris-service
-spec:
-  selector:
-    app: tetris
-  ports:
-  - protocol: TCP
-    port: 80                 # Expose port 80
-    targetPort: 3000
-  type: LoadBalancer
-
+      project: default
+      source:
+        repoURL: https://github.com/kiranbabukk/devsecops-Tetris-manifest.git
+        targetRevision: HEAD
+        path: .
+      destination:
+        server: '{{server}}'
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
